@@ -18,7 +18,9 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 		db = db.Preload(moreKeys[i])
 	}
 
-	db = db.Table(restaurantmodel.Restaurant{}.TableName()).Where(condition)
+	db = db.Table(restaurantmodel.Restaurant{}.TableName()).
+		Where(condition).
+		Where("status in (1)")
 
 	if v := filter; v != nil {
 		if v.CityId > 0 {
@@ -27,7 +29,7 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 	}
 
 	if err := db.Count(&paging.Total).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDB(err)
 	}
 
 	offset := (paging.Page - 1) * paging.Limit
@@ -37,7 +39,7 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 		Limit(int(paging.Limit)).
 		Order("id desc").
 		Find(&result).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDB(err)
 	}
 
 	return result, nil

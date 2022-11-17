@@ -47,14 +47,17 @@ type CreateRestaurantStore interface {
 	Create(ctx context.Context, data *restaurantmodel.RestaurantCreate) error
 }
 
+// private
 type createRestaurantBiz struct {
 	store CreateRestaurantStore
 }
 
+// public | export for outside to use
 func NewCreateRestaurantBiz(store CreateRestaurantStore) *createRestaurantBiz {
 	return &createRestaurantBiz{store: store}
 }
 
+// one of method `createRestaurantBiz`
 func (biz *createRestaurantBiz) CreateRestaurant(
 	ctx context.Context,
 	data *restaurantmodel.RestaurantCreate) error {

@@ -1,6 +1,7 @@
 package ginrestaurant
 
 import (
+	"fmt"
 	"food_delivery/common"
 	"food_delivery/component/appctx"
 	"food_delivery/modules/restaurant/restaurantbiz"
@@ -27,6 +28,10 @@ func ListRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 		}
 
 		paging.Fulfill()
+
+		myArr := []string{}
+
+		fmt.Println(myArr[0])
 
 		store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
 		biz := restaurantbiz.NewListRestaurantBiz(store)
