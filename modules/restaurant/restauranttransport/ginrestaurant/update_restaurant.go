@@ -1,18 +1,18 @@
 package ginrestaurant
 
 import (
+	"food_delivery/common"
 	"food_delivery/component/appctx"
 	"food_delivery/modules/restaurant/restaurantbiz"
 	"food_delivery/modules/restaurant/restaurantmodel"
 	"food_delivery/modules/restaurant/restaurantstorage"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 )
 
 func UpdateRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
+		uid, err := common.FromBase58(c.Param("id"))
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, map[string]interface{}{
@@ -33,7 +33,7 @@ func UpdateRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 		store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
 		biz := restaurantbiz.NewUpdateRestaurantBiz(store)
 
-		if err := biz.UpdateRestaurant(c.Request.Context(), id, &data); err != nil {
+		if err := biz.UpdateRestaurant(c.Request.Context(), int(uid.GetLocalID()), &data); err != nil {
 			c.JSON(http.StatusUnauthorized, map[string]interface{}{
 				"error": err.Error(),
 			})

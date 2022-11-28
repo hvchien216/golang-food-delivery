@@ -7,7 +7,6 @@ import (
 	"food_delivery/modules/restaurant/restaurantstorage"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 )
 
 func GetRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
@@ -18,7 +17,7 @@ func GetRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 			panic("aaaa")
 		}()
 
-		id, err := strconv.Atoi(c.Param("id"))
+		uid, err := common.FromBase58(c.Param("id"))
 
 		// This is an error from Go standard lib, so we need to wrap it by common.ErrInvalidRequest
 		// cuz this error is not normalized
@@ -33,12 +32,14 @@ func GetRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 		store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
 		biz := restaurantbiz.NewGetRestaurantBiz(store)
 
-		result, err := biz.GetRestaurant(c.Request.Context(), id)
+		result, err := biz.GetRestaurant(c.Request.Context(), int(uid.GetLocalID()))
 
 		if err != nil {
 			// Any err thrown from Biz belongs to Application error
 			panic(err)
 		}
+
+		result.Mask(false)
 
 		c.JSON(http.StatusOK, common.SimpleSucessResponse(result))
 	}

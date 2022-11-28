@@ -40,6 +40,10 @@ func (biz *getRestaurantBiz) GetRestaurant(
 		//return nil, common.ErrCannotGetEntity(restaurantmodel.EntityName, err)
 		return nil, common.ErrEntityDeleted(restaurantmodel.EntityName, err)
 	}
-
+	//in b
+	//a
+	// enterring: s
+	// leaving: s
+	//
 	return result, err
 }

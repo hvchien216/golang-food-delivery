@@ -12,11 +12,11 @@ const EntityName = "RESTAURANT"
 // `common.SQLModel` is embed struct
 type Restaurant struct {
 	common.SQLModel `json:",inline"`
-	Id              int            `json:"id" gorm:"column:id;"`
 	Name            string         `json:"name" gorm:"column:name;"`
 	Addr            string         `json:"address" gorm:"column:addr;"`
 	Logo            *common.Image  `json:"logo" gorm:"column:logo;"`
 	Cover           *common.Images `json:"cover" gorm:"column:cover;"`
+	LikeCount       int            `json:"like_count" gorm:"-"`
 }
 
 func (Restaurant) TableName() string {
@@ -33,10 +33,11 @@ type RestaurantUpdate struct {
 
 // Data Model
 type RestaurantCreate struct {
-	Name  string         `json:"name" gorm:"column:name;"`
-	Addr  string         `json:"address" gorm:"column:addr;"`
-	Logo  *common.Image  `json:"logo" gorm:"column:logo;"`
-	Cover *common.Images `json:"cover" gorm:"column:cover;"`
+	common.SQLModel `json:",inline"`
+	Name            string         `json:"name" gorm:"column:name;"`
+	Addr            string         `json:"address" gorm:"column:addr;"`
+	Logo            *common.Image  `json:"logo" gorm:"column:logo;"`
+	Cover           *common.Images `json:"cover" gorm:"column:cover;"`
 }
 
 func (RestaurantCreate) TableName() string {
@@ -53,4 +54,8 @@ func (res *RestaurantCreate) Validate() error {
 		return errors.New("restaurant cannot be blank")
 	}
 	return nil
+}
+
+func (r *Restaurant) Mask(isAdminOrOwner bool) {
+	r.GenUID(1)
 }

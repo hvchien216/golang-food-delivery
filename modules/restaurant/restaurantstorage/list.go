@@ -32,10 +32,18 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 		return nil, common.ErrDB(err)
 	}
 
-	offset := (paging.Page - 1) * paging.Limit
+	if v := paging.FakeCursor; v != "" {
+		if uid, err := common.FromBase58(v); err == nil {
+			db = db.Where("id < ?", uid.GetLocalID())
+		}
+	} else {
+		offset := (paging.Page - 1) * paging.Limit
+		db = db.Offset(int(offset))
+
+	}
+
 	//log.Fatalln("paigngggggg", paging)
 	if err := db.
-		Offset(int(offset)).
 		Limit(int(paging.Limit)).
 		Order("id desc").
 		Find(&result).Error; err != nil {
