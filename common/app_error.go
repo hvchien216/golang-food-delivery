@@ -85,6 +85,14 @@ func ErrCannotListEntity(entity string, err error) *AppError {
 	)
 }
 
+func ErrCannotCreateEntity(entity string, err error) *AppError {
+	return NewCustomError(
+		err,
+		fmt.Sprintf("Cannot create %s", strings.ToLower(entity)),
+		fmt.Sprintf("ERR_CANNOT_CREATE_%s", entity),
+	)
+}
+
 func ErrCannotGetEntity(entity string, err error) *AppError {
 	return NewCustomError(
 		err,
@@ -130,5 +138,13 @@ func ErrEntityNotFound(entity string, err error) *AppError {
 		err,
 		fmt.Sprintf("%s not found", strings.ToLower(entity)),
 		fmt.Sprintf("ERR_%s_NOT_FOUND", entity),
+	)
+}
+
+func ErrNoPermission(err error) *AppError {
+	return NewCustomError(
+		err,
+		fmt.Sprintf("you have no permission"),
+		fmt.Sprintf("ERR_NO_PERMISSION"),
 	)
 }

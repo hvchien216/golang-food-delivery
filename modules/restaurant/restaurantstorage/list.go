@@ -14,10 +14,6 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 	var result []restaurantmodel.Restaurant
 	db := s.db
 
-	for i := range moreKeys {
-		db = db.Preload(moreKeys[i])
-	}
-
 	db = db.Table(restaurantmodel.Restaurant{}.TableName()).
 		Where(condition).
 		Where("status in (1)")
@@ -30,6 +26,10 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 
 	if err := db.Count(&paging.Total).Error; err != nil {
 		return nil, common.ErrDB(err)
+	}
+
+	for i := range moreKeys {
+		db = db.Preload(moreKeys[i])
 	}
 
 	if v := paging.FakeCursor; v != "" {

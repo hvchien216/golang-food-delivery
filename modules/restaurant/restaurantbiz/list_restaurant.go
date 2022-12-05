@@ -33,7 +33,7 @@ func (biz *listRestaurantBiz) ListRestaurant(
 	paging *common.Paging,
 	moreKeys ...string) ([]restaurantmodel.Restaurant, error) {
 
-	result, err := biz.store.ListDataByCondition(ctx, nil, filter, paging)
+	result, err := biz.store.ListDataByCondition(ctx, nil, filter, paging, "User")
 
 	ids := make([]int, len(result))
 

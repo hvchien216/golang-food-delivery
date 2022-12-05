@@ -18,6 +18,8 @@ func CreateRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 			c.JSON(401, gin.H{"oke": 1})
 			return
 		}
+		requester := c.MustGet(common.CurrentUser).(common.Requester)
+		data.OwnerId = requester.GetUserId()
 
 		store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
 		biz := restaurantbiz.NewCreateRestaurantBiz(store)
