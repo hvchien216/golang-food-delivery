@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"food_delivery/common"
 	"food_delivery/component/appctx"
 	"food_delivery/component/uploadprovider"
 	"food_delivery/middleware"
 	"food_delivery/modules/restaurant/restauranttransport/ginrestaurant"
+	"food_delivery/modules/restaurantlike/transport/ginrestaurantlike"
 	"food_delivery/modules/upload/uploadtransport/ginupload"
 	"food_delivery/modules/user/usertransport/ginuser"
 	"github.com/gin-gonic/gin"
@@ -69,7 +71,21 @@ func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey s
 		restaurants.GET("", ginrestaurant.ListRestaurant(appCtx))
 		restaurants.PATCH("/:id", ginrestaurant.UpdateRestaurant(appCtx))
 		restaurants.DELETE("/:id", ginrestaurant.DeleteRestaurant(appCtx))
+
+		restaurants.GET("/:id/liked-users", ginrestaurantlike.ListUsersLikeRestaurant(appCtx))
 	}
+
+	v1.GET("/encode-uid", func(c *gin.Context) {
+		type reqData struct {
+			DbType int `form:"type"`
+			RealId int `form:"id"`
+		}
+
+		var d reqData
+		c.ShouldBind(&d)
+
+		c.JSON(http.StatusOK, gin.H{"id": common.NewUID(uint32(d.RealId), d.DbType, 1)})
+	})
 
 	return r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

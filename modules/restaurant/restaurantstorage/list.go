@@ -20,7 +20,7 @@ func (s *sqlStore) ListDataByCondition(ctx context.Context,
 
 	if v := filter; v != nil {
 		if v.CityId > 0 {
-			db = db.Where("city = ?", v.CityId)
+			db = db.Where("city_id = ?", v.CityId)
 		}
 	}
 
