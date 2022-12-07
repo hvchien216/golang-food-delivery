@@ -3,7 +3,9 @@ package restaurantlikebiz
 import (
 	"context"
 	"food_delivery/common"
+	"food_delivery/component/asyncjob"
 	restaurantlikemodel "food_delivery/modules/restaurantlike/model"
+	"time"
 )
 
 type UserLikeRestaurantStore interface {
@@ -41,10 +43,25 @@ func (biz *userLikeRestaurantBiz) LikeRestaurant(
 		return restaurantlikemodel.ErrCannotLikeRestaurant(err)
 	}
 
+	// Side Effect
+
+	// without Job
+	//go func() {
+	//	defer common.AppRecover()
+	//	_ = biz.increaseLikeStore.IncreaseLikeCount(ctx, data.RestaurantId)
+	//}()
+
+	// with Job
 	go func() {
 		defer common.AppRecover()
-		//side effect
-		_ = biz.increaseLikeStore.IncreaseLikeCount(ctx, data.RestaurantId)
+		job := asyncjob.NewJob(func(ctx context.Context) error {
+			return biz.increaseLikeStore.IncreaseLikeCount(ctx, data.RestaurantId)
+
+		})
+
+		job.SetRetryDurations([]time.Duration{time.Second * 3})
+
+		_ = asyncjob.NewGroup(true, job)
 	}()
 
 	return nil
