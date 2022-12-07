@@ -73,6 +73,8 @@ func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey s
 		restaurants.DELETE("/:id", ginrestaurant.DeleteRestaurant(appCtx))
 
 		restaurants.GET("/:id/liked-users", ginrestaurantlike.ListUsersLikeRestaurant(appCtx))
+		restaurants.POST("/:id/like", ginrestaurantlike.LikeRestaurant(appCtx))
+		restaurants.DELETE("/:id/unlike", ginrestaurantlike.UnLikeRestaurant(appCtx))
 	}
 
 	v1.GET("/encode-uid", func(c *gin.Context) {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"food_delivery/common"
 	"food_delivery/modules/restaurant/restaurantmodel"
-	"log"
 )
 
 type ListRestaurantStore interface {
@@ -49,28 +48,28 @@ func (repo *listRestaurantRepo) ListRestaurant(
 		return nil, common.ErrCannotListEntity(restaurantmodel.EntityName, err)
 	}
 
-	ids := make([]int, len(result))
-
-	for i := range result {
-		ids[i] = result[i].Id
-	}
-
-	mapLikesResponse, err := repo.likeStore.GetRestaurantLikes(ctx, ids)
-
-	// Tại dây: vì nếu apply theo cách cũ (JOIN) thì nếu bảng được JOIN lỗi => chết luôn
-	// Còn ở đây: nếu mà có err thì chỉ nên show ra msg (Ex: không thể lấy lượt like) không nên để nó bị ảnh hưởng nếu bị lỗi
-	// ====> we just log
-	// Rất thích hợp khi build Mircoservices
-	if err != nil {
-		//return nil, common.ErrEntityNotFound(restaurantmodel.EntityName, err)
-		log.Println("Cannot get restaurant likes", err)
-	}
-
-	if v := mapLikesResponse; v != nil {
-		for i, item := range result {
-			result[i].LikeCount = mapLikesResponse[item.Id]
-		}
-	}
+	//ids := make([]int, len(result))
+	//
+	//for i := range result {
+	//	ids[i] = result[i].Id
+	//}
+	//
+	//mapLikesResponse, err := repo.likeStore.GetRestaurantLikes(ctx, ids)
+	//
+	//// Tại dây: vì nếu apply theo cách cũ (JOIN) thì nếu bảng được JOIN lỗi => chết luôn
+	//// Còn ở đây: nếu mà có err thì chỉ nên show ra msg (Ex: không thể lấy lượt like) không nên để nó bị ảnh hưởng nếu bị lỗi
+	//// ====> we just log
+	//// Rất thích hợp khi build Mircoservices
+	//if err != nil {
+	//	//return nil, common.ErrEntityNotFound(restaurantmodel.EntityName, err)
+	//	log.Println("Cannot get restaurant likes", err)
+	//}
+	//
+	//if v := mapLikesResponse; v != nil {
+	//	for i, item := range result {
+	//		result[i].LikedCount = mapLikesResponse[item.Id]
+	//	}
+	//}
 
 	return result, nil
 }

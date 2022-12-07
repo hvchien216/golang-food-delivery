@@ -1,6 +1,8 @@
 package restaurantlikemodel
 
 import (
+	"errors"
+	"fmt"
 	"food_delivery/common"
 	"time"
 )
@@ -16,4 +18,28 @@ type Like struct {
 
 func (Like) TableName() string {
 	return "restaurant_likes"
+}
+
+func ErrCannotLikeRestaurant(err error) *common.AppError {
+	return common.NewCustomError(
+		err,
+		fmt.Sprintf("Cannot like this restaurant"),
+		fmt.Sprintf("ERR_CANNOT_LIKE_RESTAURANT"),
+	)
+}
+
+func ErrAlreadyLikedRestaurant() *common.AppError {
+	return common.NewCustomError(
+		errors.New("Already liked this restaurant"),
+		fmt.Sprintf("Already liked this restaurant"),
+		fmt.Sprintf("ERR_ALREADY_LIKED_RESTAURANT"),
+	)
+}
+
+func ErrAlreadyUnLikedRestaurant() *common.AppError {
+	return common.NewCustomError(
+		errors.New("Already unliked this restaurant"),
+		fmt.Sprintf("Already unliked this restaurant"),
+		fmt.Sprintf("ERR_ALREADY_UNLIKED_RESTAURANT"),
+	)
 }

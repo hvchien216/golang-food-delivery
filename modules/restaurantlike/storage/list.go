@@ -14,7 +14,7 @@ func (s *sqlStore) GetRestaurantLikes(ctx context.Context, ids []int) (map[int]i
 
 	type sqlData struct {
 		RestaurantId int `gorm:"column:restaurant_id"`
-		LikeCount    int `gorm:"column:count"`
+		LikedCount   int `gorm:"column:count"`
 	}
 
 	var listLike []sqlData
@@ -28,7 +28,7 @@ func (s *sqlStore) GetRestaurantLikes(ctx context.Context, ids []int) (map[int]i
 	}
 
 	for _, item := range listLike {
-		result[item.RestaurantId] = item.LikeCount
+		result[item.RestaurantId] = item.LikedCount
 	}
 
 	return result, nil

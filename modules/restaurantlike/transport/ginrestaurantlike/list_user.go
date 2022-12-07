@@ -14,20 +14,18 @@ func ListUsersLikeRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, err := common.FromBase58(c.Param("id"))
 
-		filter := restaurantlikemodel.Filter{
-			RestaurantId: int(uid.GetLocalID()),
+		if err != nil {
+			panic(common.ErrInvalidRequest(err))
 		}
 
-		if err := c.ShouldBind(&filter); err != nil {
-			c.JSON(401, gin.H{"oke": 1})
-			return
+		filter := restaurantlikemodel.Filter{
+			RestaurantId: int(uid.GetLocalID()),
 		}
 
 		var paging common.Paging
 
 		if err := c.ShouldBind(&paging); err != nil {
-			c.JSON(401, gin.H{"oke": 1})
-			return
+			panic(common.ErrInvalidRequest(err))
 		}
 
 		paging.Fulfill()
@@ -42,8 +40,7 @@ func ListUsersLikeRestaurant(appCtx appctx.AppContext) gin.HandlerFunc {
 		users, err := biz.ListUsers(c.Request.Context(), &filter, &paging)
 
 		if err != nil {
-			c.JSON(401, gin.H{"error": err.Error()})
-			return
+			panic(common.ErrInvalidRequest(err))
 		}
 
 		for i := range users {
