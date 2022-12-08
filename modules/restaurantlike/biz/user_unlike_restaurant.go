@@ -57,7 +57,7 @@ func (biz *userUnLikeRestaurantBiz) UnLikeRestaurant(
 			return biz.decreaseLikeCountStore.DecreaseLikeCount(ctx, restaurantId)
 
 		})
-		_ = asyncjob.NewGroup(true, job)
+		_ = asyncjob.NewGroup(true, job).Run(ctx)
 	}()
 
 	return nil

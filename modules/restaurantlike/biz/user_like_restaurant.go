@@ -61,7 +61,7 @@ func (biz *userLikeRestaurantBiz) LikeRestaurant(
 
 		job.SetRetryDurations([]time.Duration{time.Second * 3})
 
-		_ = asyncjob.NewGroup(true, job)
+		_ = asyncjob.NewGroup(true, job).Run(ctx)
 	}()
 
 	return nil
