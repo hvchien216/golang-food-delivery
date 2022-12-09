@@ -3,8 +3,8 @@ package restaurantlikebiz
 import (
 	"context"
 	"food_delivery/common"
-	"food_delivery/component/asyncjob"
 	restaurantlikemodel "food_delivery/modules/restaurantlike/model"
+	"food_delivery/pubsub"
 )
 
 type UserUnLikeRestaurantStore interface {
@@ -12,17 +12,25 @@ type UserUnLikeRestaurantStore interface {
 	Find(ctx context.Context, conditions map[string]interface{}) (*restaurantlikemodel.Like, error)
 }
 
-type DecreaseLikeCountStore interface {
-	DecreaseLikeCount(ctx context.Context, id int) error
-}
+//type DecreaseLikeCountStore interface {
+//	DecreaseLikeCount(ctx context.Context, id int) error
+//}
 
 type userUnLikeRestaurantBiz struct {
-	store                  UserUnLikeRestaurantStore
-	decreaseLikeCountStore DecreaseLikeCountStore
+	store UserUnLikeRestaurantStore
+	//decreaseLikeCountStore DecreaseLikeCountStore,
+	pubsub pubsub.Pubsub
 }
 
-func NewUserUnLikeRestaurantBiz(store UserUnLikeRestaurantStore, decreaseLikeCountStore DecreaseLikeCountStore) *userUnLikeRestaurantBiz {
-	return &userUnLikeRestaurantBiz{store: store, decreaseLikeCountStore: decreaseLikeCountStore}
+func NewUserUnLikeRestaurantBiz(
+	store UserUnLikeRestaurantStore,
+	//decreaseLikeCountStore DecreaseLikeCountStore
+	pubsub pubsub.Pubsub) *userUnLikeRestaurantBiz {
+	return &userUnLikeRestaurantBiz{
+		store: store,
+		//decreaseLikeCountStore: decreaseLikeCountStore
+		pubsub: pubsub,
+	}
 }
 
 func (biz *userUnLikeRestaurantBiz) UnLikeRestaurant(
@@ -51,14 +59,23 @@ func (biz *userUnLikeRestaurantBiz) UnLikeRestaurant(
 	//}()
 
 	//with Job
-	go func() {
-		defer common.AppRecover()
-		job := asyncjob.NewJob(func(ctx context.Context) error {
-			return biz.decreaseLikeCountStore.DecreaseLikeCount(ctx, restaurantId)
+	//go func() {
+	//	defer common.AppRecover()
+	//	job := asyncjob.NewJob(func(ctx context.Context) error {
+	//		return biz.decreaseLikeCountStore.DecreaseLikeCount(ctx, restaurantId)
+	//
+	//	})
+	//	_ = asyncjob.NewGroup(true, job).Run(ctx)
+	//}()
 
-		})
-		_ = asyncjob.NewGroup(true, job).Run(ctx)
-	}()
+	// Pubsub
+	biz.pubsub.Publish(
+		ctx,
+		common.TopicUserDislikeRestaurant,
+		pubsub.NewMessage(&restaurantlikemodel.Like{
+			RestaurantId: restaurantId,
+			UserId:       userId,
+		}))
 
 	return nil
 }

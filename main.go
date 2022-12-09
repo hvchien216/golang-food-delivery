@@ -50,7 +50,13 @@ func main() {
 func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey string) error {
 	appCtx := appctx.NewAppContext(db, provider, secretKey, pblocal.NewPubsub())
 
-	subscriber.Setup(appCtx)
+	//deprecated
+	//subscriber.Setup(appCtx)
+
+	// use this line as an alternative for Setup
+	if err := subscriber.NewEngine(appCtx).Start(); err != nil {
+		log.Fatalln()
+	}
 
 	r := gin.Default()
 	r.Use(middleware.Recover(appCtx))

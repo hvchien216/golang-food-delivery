@@ -5,6 +5,7 @@ import (
 	"food_delivery/common"
 	"food_delivery/component/appctx"
 	"food_delivery/modules/restaurant/restaurantstorage"
+	"food_delivery/pubsub"
 )
 
 type HasRestaurantId interface {
@@ -21,4 +22,16 @@ func IncreaseLikeCountAfterUserLikeRestaurant(appCtx appctx.AppContext, ctx cont
 			store.IncreaseLikeCount(ctx, likeData.GetRestaurantId())
 		}
 	}()
+}
+
+func RunIncreaseLikeCountAfterUserLikeRestaurant(appCtx appctx.AppContext) consumerJob {
+	return consumerJob{
+		Title: "Increase like count after user likes restaurant",
+		Hld: func(ctx context.Context, message *pubsub.Message) error {
+			store := restaurantstorage.NewSQLStore(appCtx.GetMainDBConnection())
+
+			likeData := (message.Data()).(HasRestaurantId)
+			return store.IncreaseLikeCount(ctx, likeData.GetRestaurantId())
+		},
+	}
 }
