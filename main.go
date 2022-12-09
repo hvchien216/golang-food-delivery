@@ -10,6 +10,8 @@ import (
 	"food_delivery/modules/restaurantlike/transport/ginrestaurantlike"
 	"food_delivery/modules/upload/uploadtransport/ginupload"
 	"food_delivery/modules/user/usertransport/ginuser"
+	"food_delivery/pubsub/pblocal"
+	"food_delivery/subscriber"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -46,7 +48,15 @@ func main() {
 }
 
 func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey string) error {
-	appCtx := appctx.NewAppContext(db, provider, secretKey)
+	appCtx := appctx.NewAppContext(db, provider, secretKey, pblocal.NewPubsub())
+
+	//deprecated
+	//subscriber.Setup(appCtx)
+
+	// use this line as an alternative for Setup
+	if err := subscriber.NewEngine(appCtx).Start(); err != nil {
+		log.Fatalln()
+	}
 
 	r := gin.Default()
 	r.Use(middleware.Recover(appCtx))

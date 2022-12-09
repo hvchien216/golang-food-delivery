@@ -3,9 +3,8 @@ package restaurantlikebiz
 import (
 	"context"
 	"food_delivery/common"
-	"food_delivery/component/asyncjob"
 	restaurantlikemodel "food_delivery/modules/restaurantlike/model"
-	"time"
+	"food_delivery/pubsub"
 )
 
 type UserLikeRestaurantStore interface {
@@ -13,17 +12,24 @@ type UserLikeRestaurantStore interface {
 	Find(ctx context.Context, conditions map[string]interface{}) (*restaurantlikemodel.Like, error)
 }
 
-type IncreaseLikeCountStore interface {
-	IncreaseLikeCount(ctx context.Context, id int) error
-}
+//type IncreaseLikeCountStore interface {
+//	IncreaseLikeCount(ctx context.Context, id int) error
+//}
 
 type userLikeRestaurantBiz struct {
-	store             UserLikeRestaurantStore
-	increaseLikeStore IncreaseLikeCountStore
+	store UserLikeRestaurantStore
+	//increaseLikeStore IncreaseLikeCountStore
+	pubsub pubsub.Pubsub
 }
 
-func NewUserLikeRestaurantBiz(store UserLikeRestaurantStore, increaseLikeStore IncreaseLikeCountStore) *userLikeRestaurantBiz {
-	return &userLikeRestaurantBiz{store: store, increaseLikeStore: increaseLikeStore}
+func NewUserLikeRestaurantBiz(
+	store UserLikeRestaurantStore,
+	//increaseLikeStore IncreaseLikeCountStore,
+	pubsub pubsub.Pubsub) *userLikeRestaurantBiz {
+	return &userLikeRestaurantBiz{
+		store: store,
+		//increaseLikeStore: increaseLikeStore,
+		pubsub: pubsub}
 }
 
 func (biz *userLikeRestaurantBiz) LikeRestaurant(
@@ -52,17 +58,20 @@ func (biz *userLikeRestaurantBiz) LikeRestaurant(
 	//}()
 
 	// with Job
-	go func() {
-		defer common.AppRecover()
-		job := asyncjob.NewJob(func(ctx context.Context) error {
-			return biz.increaseLikeStore.IncreaseLikeCount(ctx, data.RestaurantId)
+	//go func() {
+	//	defer common.AppRecover()
+	//	job := asyncjob.NewJob(func(ctx context.Context) error {
+	//		return biz.increaseLikeStore.IncreaseLikeCount(ctx, data.RestaurantId)
+	//
+	//	})
+	//
+	//	job.SetRetryDurations([]time.Duration{time.Second * 3})
+	//
+	//	_ = asyncjob.NewGroup(true, job).Run(ctx)
+	//}()
 
-		})
-
-		job.SetRetryDurations([]time.Duration{time.Second * 3})
-
-		_ = asyncjob.NewGroup(true, job).Run(ctx)
-	}()
+	// New solution: use pubsub
+	biz.pubsub.Publish(ctx, common.TopicUserLikeRestaurant, pubsub.NewMessage(data))
 
 	return nil
 }
