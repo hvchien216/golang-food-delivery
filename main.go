@@ -11,6 +11,7 @@ import (
 	"food_delivery/modules/upload/uploadtransport/ginupload"
 	"food_delivery/modules/user/usertransport/ginuser"
 	"food_delivery/pubsub/pblocal"
+	"food_delivery/skio"
 	"food_delivery/subscriber"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -50,15 +51,22 @@ func main() {
 func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey string) error {
 	appCtx := appctx.NewAppContext(db, provider, secretKey, pblocal.NewPubsub())
 
+	r := gin.Default()
+
+	rtEngine := skio.NewEngine()
+
+	if err := rtEngine.Run(appCtx, r); err != nil {
+		log.Fatalln(err)
+	}
+
 	//deprecated
 	//subscriber.Setup(appCtx)
 
 	// use this line as an alternative for Setup
-	if err := subscriber.NewEngine(appCtx).Start(); err != nil {
+	if err := subscriber.NewEngine(appCtx, rtEngine).Start(); err != nil {
 		log.Fatalln()
 	}
 
-	r := gin.Default()
 	r.Use(middleware.Recover(appCtx))
 
 	r.GET("/ping", func(c *gin.Context) {
@@ -66,6 +74,8 @@ func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey s
 			"message": "pong",
 		})
 	})
+
+	r.StaticFile("/demo/", "./demo.html")
 
 	v1 := r.Group("/v1")
 	v1.POST("/upload", ginupload.Upload(appCtx))

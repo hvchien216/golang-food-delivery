@@ -1,0 +1,62 @@
+<!doctype html>
+<head>
+    <title>Demo socket 200lab </title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.js"></script>
+</head>
+
+<body>
+<div id="main">
+    <h1>Demo Socket IO</h1>
+    <!--    <input id="name" placeholder="Name" />-->
+    <!--    <input id="age" placeholder="Age" />-->
+    <!--    <button> Socket </button>-->
+</div>
+
+<script>
+    const socket = io("", {transports: ['websocket']});
+    var locTimer = null;
+
+    socket.on('connect', () => {
+        console.log('Client connected');
+
+        socket.emit('test', 'Hello server');
+
+        //
+        socket.emit('notice', {name: "Chien Anbs",age: 21});
+        // // Emit token
+        socket.emit('authenticate', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXlsb2FkIjp7InVzZXJfaWQiOjMsInJvbGUiOiJ1c2VyIn0sImV4cCI6MTY3MjY3NDk0NSwiaWF0IjoxNjcwMDgyOTQ1fQ.hR7KyBgweFMl2dRxPTwzQL269GR7v6_XC2wU3vT5M9w');
+    })
+
+    // socket.on('authenticated', () => {
+    //
+    // })
+
+    socket.on('test', (msg) => console.log("test",msg));
+    socket.on('notice', (p) => console.log("notice:",p));
+
+    socket.on('authenticated', (msg) => {
+        console.log('authenticated', msg)
+
+        if (locTimer != null) {
+            clearInterval(locTimer)
+        }
+
+        locTimer = setInterval(() => {
+            socket.emit('UserUpdateLocation', {lat: 10.7900422, lng: 106.6623443})
+        }, 3000)
+    });
+
+    // socket.on('your_profile', (msg) => console.log('your profile:', msg))
+    socket.on('TopicUserLikeRestaurant',(data)=>console.log('TopicUserLikeRestaurant',data))
+    // socket.on('TopicUserDisLikeRestaurant',(data)=>console.log('TopicUserDisLikeRestaurant',data))
+    // socket.on('authentication_failed', (msg) => console.log('authentication_failed:', msg));
+    // // socket.on('NoteCreated', (msg) => console.log('NoteCreated', msg));
+    // socket.on('TopicUserLikeRestaurant', (data) => console.log('TopicUserLikeRestaurant:', data))
+
+
+    socket.on('disconnect', () => console.log('Socket is disconnected'))
+
+</script>
+</body>
+
+</html>
