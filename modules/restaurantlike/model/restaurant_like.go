@@ -24,6 +24,10 @@ func (l *Like) GetRestaurantId() int {
 	return l.RestaurantId
 }
 
+func (l *Like) GetUserId() int {
+	return l.UserId
+}
+
 func ErrCannotLikeRestaurant(err error) *common.AppError {
 	return common.NewCustomError(
 		err,

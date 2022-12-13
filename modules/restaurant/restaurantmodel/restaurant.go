@@ -25,6 +25,10 @@ func (Restaurant) TableName() string {
 	return "restaurants"
 }
 
+func (r *Restaurant) GetOwnerId() int {
+	return r.UserId
+}
+
 // Data Model
 type RestaurantUpdate struct {
 	Name  *string        `json:"name" gorm:"column:name;"`

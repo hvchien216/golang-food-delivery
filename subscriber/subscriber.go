@@ -6,6 +6,7 @@ import (
 	"food_delivery/component/appctx"
 	"food_delivery/component/asyncjob"
 	"food_delivery/pubsub"
+	"food_delivery/skio"
 	"log"
 )
 
@@ -15,11 +16,12 @@ type consumerJob struct {
 }
 
 type consumerEngine struct {
-	appCtx appctx.AppContext
+	appCtx   appctx.AppContext
+	rtEngine skio.RealtimeEngine
 }
 
-func NewEngine(appCtx appctx.AppContext) *consumerEngine {
-	return &consumerEngine{appCtx: appCtx}
+func NewEngine(appCtx appctx.AppContext, rtEngine skio.RealtimeEngine) *consumerEngine {
+	return &consumerEngine{appCtx: appCtx, rtEngine: rtEngine}
 }
 
 func (engine *consumerEngine) Start(
@@ -30,6 +32,7 @@ func (engine *consumerEngine) Start(
 		common.TopicUserLikeRestaurant,
 		true,
 		RunIncreaseLikeCountAfterUserLikeRestaurant(engine.appCtx),
+		EmitRealtimeAfterUserLikeRestaurant(engine.appCtx, engine.rtEngine),
 	)
 
 	engine.startSubTopic(
