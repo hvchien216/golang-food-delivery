@@ -6,11 +6,10 @@ import (
 	"food_delivery/component/appctx"
 	"food_delivery/component/uploadprovider"
 	"food_delivery/middleware"
-	"food_delivery/modules/restaurant/restauranttransport/ginrestaurant"
-	"food_delivery/modules/restaurantlike/transport/ginrestaurantlike"
 	"food_delivery/modules/upload/uploadtransport/ginupload"
 	"food_delivery/modules/user/usertransport/ginuser"
 	"food_delivery/pubsub/pblocal"
+	"food_delivery/routes/restaurantroute"
 	"food_delivery/skio"
 	"food_delivery/subscriber"
 	"github.com/gin-gonic/gin"
@@ -79,23 +78,13 @@ func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey s
 
 	v1 := r.Group("/v1")
 	v1.POST("/upload", ginupload.Upload(appCtx))
+	//v1.GET("/presigned-upload-url", func(C *gin.Context) {
+	//	c.JSON(http.StatusOK, gin.H{"data": s3Provider.GetUploadPresignedUrl(c.Request.Context())})
+	//})
 
 	v1.POST("/register", ginuser.Register(appCtx))
 	v1.POST("/login", ginuser.Login(appCtx))
 	v1.GET("/profile", middleware.RequireAuth(appCtx), ginuser.GetProfile(appCtx))
-
-	restaurants := v1.Group("/restaurants", middleware.RequireAuth(appCtx))
-	{
-		restaurants.POST("", ginrestaurant.CreateRestaurant(appCtx))
-		restaurants.GET("/:id", ginrestaurant.GetRestaurant(appCtx))
-		restaurants.GET("", ginrestaurant.ListRestaurant(appCtx))
-		restaurants.PATCH("/:id", ginrestaurant.UpdateRestaurant(appCtx))
-		restaurants.DELETE("/:id", ginrestaurant.DeleteRestaurant(appCtx))
-
-		restaurants.GET("/:id/liked-users", ginrestaurantlike.ListUsersLikeRestaurant(appCtx))
-		restaurants.POST("/:id/like", ginrestaurantlike.LikeRestaurant(appCtx))
-		restaurants.DELETE("/:id/unlike", ginrestaurantlike.UnLikeRestaurant(appCtx))
-	}
 
 	v1.GET("/encode-uid", func(c *gin.Context) {
 		type reqData struct {
@@ -108,6 +97,38 @@ func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey s
 
 		c.JSON(http.StatusOK, gin.H{"id": common.NewUID(uint32(d.RealId), d.DbType, 1)})
 	})
+	restaurantroute.Routes(v1, appCtx)
+
+	admin := v1.Group(
+		"/admin",
+		middleware.RequireAuth(appCtx),
+		middleware.RequireRoles(appCtx, "admin"),
+	)
+	{
+		admin.GET("", func(c *gin.Context) {
+			c.JSON(http.StatusOK, common.SimpleSucessResponse("ok"))
+		})
+	}
 
 	return r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
+
+//type Permission uint64
+//
+//const (
+//	Read Permission = 1 << iota
+//	Write
+//	Delete
+//	Invite
+//)
+
+// User 1: Create group FB A (Owner A)
+// User 1 invite User 2 into group A (User 2 as a member of A)
+
+// user_id | group_id | permission
+// 1	   | 1        | 6
+
+//or
+
+// user_id | group_id | permission
+// 1	   | 1        | read,write,delete,invite
