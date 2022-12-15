@@ -79,6 +79,9 @@ func runService(db *gorm.DB, provider uploadprovider.UploadProvider, secretKey s
 
 	v1 := r.Group("/v1")
 	v1.POST("/upload", ginupload.Upload(appCtx))
+	//v1.GET("/presigned-upload-url", func(C *gin.Context) {
+	//	c.JSON(http.StatusOK, gin.H{"data": s3Provider.GetUploadPresignedUrl(c.Request.Context())})
+	//})
 
 	v1.POST("/register", ginuser.Register(appCtx))
 	v1.POST("/login", ginuser.Login(appCtx))
