@@ -8,6 +8,10 @@ import (
 
 const EntityName = "RESTAURANT"
 
+var (
+	ErrNameCannotEmpty = errors.New("restaurant name cannot be blank")
+)
+
 // Business Model
 // `common.SQLModel` is embed struct
 type Restaurant struct {
@@ -58,7 +62,7 @@ func (res *RestaurantCreate) Validate() error {
 	res.Name = strings.TrimSpace(res.Name)
 
 	if len(res.Name) == 0 {
-		return errors.New("restaurant cannot be blank")
+		return ErrNameCannotEmpty
 	}
 	return nil
 }
