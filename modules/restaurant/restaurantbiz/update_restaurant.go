@@ -3,6 +3,7 @@ package restaurantbiz
 import (
 	"context"
 	"errors"
+	"food_delivery/common"
 	"food_delivery/modules/restaurant/restaurantmodel"
 )
 
@@ -19,11 +20,12 @@ type UpdateRestaurantStore interface {
 }
 
 type updateRestaurantBiz struct {
-	store UpdateRestaurantStore
+	store     UpdateRestaurantStore
+	requester common.Requester
 }
 
-func NewUpdateRestaurantBiz(store UpdateRestaurantStore) *updateRestaurantBiz {
-	return &updateRestaurantBiz{store: store}
+func NewUpdateRestaurantBiz(store UpdateRestaurantStore, requester common.Requester) *updateRestaurantBiz {
+	return &updateRestaurantBiz{store: store, requester: requester}
 }
 
 func (biz *updateRestaurantBiz) UpdateRestaurant(
@@ -40,6 +42,11 @@ func (biz *updateRestaurantBiz) UpdateRestaurant(
 
 	if result.Status == 0 {
 		return errors.New("data deleted")
+	}
+
+	// only admin & restaurant's owner can update data
+	if biz.requester.GetRole() != "admin" && result.UserId != biz.requester.GetUserId() {
+		return common.ErrNoPermission(nil)
 	}
 
 	if err := biz.store.UpdateData(ctx, id, data); err != nil {
